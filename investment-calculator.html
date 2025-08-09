@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחשבון אופטימיזציית קנייה</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            direction: rtl;
+            text-align: right;
+            background-color: #f3f4f6;
+        }
+        .input-group {
+            background-color: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+        /* עיצוב נוסף עבור שדות העמלה המינימליים */
+        .commission-input-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .commission-input-group > div {
+            flex: 1;
+            min-width: 150px;
+        }
+        .commission-input-group input {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .commission-input-group label {
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl w-full max-w-lg space-y-6">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center">מחשבון אופטימיזציית קנייה</h1>
+        
+        <div id="message-box" class="hidden p-4 rounded-lg bg-red-100 text-red-700 font-medium" role="alert"></div>
+
+        <div class="space-y-6">
+            <!-- קלט: מחירי ניירות ערך -->
+            <div class="input-group">
+                <h2 class="text-xl font-bold text-gray-700 mb-4 text-center">מחירי ניירות ערך</h2>
+                <div>
+                    <label for="price1" class="block text-sm font-medium text-gray-700">מחיר נייר ערך <span class="font-bold text-sky-600">1159250</span></label>
+                    <input type="number" id="price1" step="100" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500" placeholder="לדוגמה: 20000">
+                </div>
+                <div>
+                    <label for="price2" class="block text-sm font-medium text-gray-700 mt-4">מחיר נייר ערך <span class="font-bold text-sky-600">1159243</span></label>
+                    <input type="number" id="price2" step="100" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500" placeholder="לדוגמה: 15000">
+                </div>
+            </div>
+
+            <!-- קלט: סכום להשקעה -->
+            <div class="input-group">
+                <h2 class="text-xl font-bold text-gray-700 mb-4 text-center">כסף זמין</h2>
+                <div>
+                    <!-- שינוי טקסט הlabel -->
+                    <label for="totalMoney" class="block text-sm font-medium text-gray-700">סכום להשקעה</label>
+                    <!-- יישור לימין של תיבת הקלט -->
+                    <input type="text" id="totalMoney" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500" placeholder="לדוגמה: 10000.50">
+                </div>
+            </div>
+        </div>
+
+        <!-- קלט: פרטי עמלה מינימליים -->
+        <div class="border-t border-gray-200 mt-4 pt-4 text-center">
+            <h3 class="text-sm font-semibold text-gray-600 mb-2">פרטי עמלה</h3>
+            <div class="commission-input-group">
+                <div>
+                    <label for="commissionRate" class="block text-sm font-medium text-gray-500">אחוז עמלה (%)</label>
+                    <input type="number" id="commissionRate" value="0.06" min="0" step="0.01" class="mt-1 block w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 text-center">
+                </div>
+                <div>
+                    <label for="minCommission" class="block text-sm font-medium text-gray-500">עמלה מינימלית (ש"ח)</label>
+                    <input type="number" id="minCommission" value="3.00" min="0" step="0.50" class="mt-1 block w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 text-center">
+                </div>
+            </div>
+        </div>
+
+        <button id="calculateBtn" class="w-full bg-sky-600 text-white p-3 rounded-lg font-bold text-lg shadow-lg hover:bg-sky-700 transition-colors">
+            הצע תוכנית קנייה
+        </button>
+
+        <div id="results" class="hidden mt-6 p-6 rounded-2xl bg-gray-50 border-2 border-gray-200 space-y-4 text-center">
+            <!-- הכותרת "תוצאות החישוב" הוסרה -->
+            <div id="resultOutput" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // קבלת הפניות לאלמנטים ב-DOM
+            const totalMoneyInput = document.getElementById('totalMoney');
+            const price1Input = document.getElementById('price1');
+            const price2Input = document.getElementById('price2');
+            const commissionRateInput = document.getElementById('commissionRate');
+            const minCommissionInput = document.getElementById('minCommission');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resultsDiv = document.getElementById('results');
+            const resultOutput = document.getElementById('resultOutput');
+            const messageBox = document.getElementById('message-box');
+
+            // פונקציית עזר לעיצוב מספרים עם פסיקים
+            const formatNumber = (num) => {
+                if (isNaN(num)) return '';
+                return num.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            };
+
+            // פונקציית עזר להסרת פסיקים מפורמט המספר
+            const cleanNumber = (text) => {
+                return text.replace(/[^\d.]/g, ''); // מסיר כל תו שאינו ספרה או נקודה
+            };
+
+            // פונקציית הצגת הודעות למשתמש
+            function showMessage(message, type = 'error') {
+                messageBox.textContent = message;
+                messageBox.className = 'p-4 rounded-lg font-medium';
+                if (type === 'error') {
+                    messageBox.classList.add('bg-red-100', 'text-red-700');
+                } else if (type === 'info') {
+                    messageBox.classList.add('bg-blue-100', 'text-blue-700');
+                }
+                messageBox.classList.remove('hidden');
+                resultsDiv.classList.add('hidden');
+            }
+
+            // פורמט עבור שדה "סכום להשקעה"
+            totalMoneyInput.addEventListener('focus', (e) => {
+                // בעת לחיצה על השדה, הסר את העיצוב
+                const val = e.target.value.replace(/[^0-9.]/g, '');
+                e.target.value = val;
+            });
+
+            totalMoneyInput.addEventListener('blur', (e) => {
+                // בעת יציאה מהשדה, הוסף עיצוב
+                const num = parseFloat(e.target.value);
+                if (!isNaN(num)) {
+                    e.target.value = `${formatNumber(num)} ש"ח`;
+                }
+            });
+
+            // פונקציית חישוב אופטימיזציה
+            calculateBtn.addEventListener('click', () => {
+                // איפוס תוצאות והודעות קודמות
+                resultsDiv.classList.add('hidden');
+                messageBox.classList.add('hidden');
+                resultOutput.innerHTML = '';
+
+                // קבלת ערכים מהשדות
+                const totalMoney = parseFloat(cleanNumber(totalMoneyInput.value));
+                const price1Agorot = parseFloat(price1Input.value);
+                const price2Agorot = parseFloat(price2Input.value);
+                // קבלת ערכי העמלה מהשדות החדשים
+                const commissionRate = parseFloat(commissionRateInput.value);
+                const minCommission = parseFloat(minCommissionInput.value);
+                
+                const commissionDecimal = commissionRate / 100;
+
+                // אימות קלט
+                if (isNaN(totalMoney) || isNaN(price1Agorot) || isNaN(price2Agorot) || totalMoney <= 0 || price1Agorot <= 0 || price2Agorot <= 0 || isNaN(commissionRate) || isNaN(minCommission) || commissionRate < 0 || minCommission < 0) {
+                    showMessage('אנא הזן ערכים חוקיים וחיוביים בכל השדות.');
+                    return;
+                }
+
+                // המרת אגורות לשקלים
+                const price1Ils = price1Agorot / 100;
+                const price2Ils = price2Agorot / 100;
+
+                // הגדרת משתנים למציאת התוצאה הטובה ביותר
+                let minLeftover = Infinity;
+                let bestN1 = 0;
+                let bestN2 = 0;
+                let maxTotalCost = 0;
+
+                // לולאה אופטימיזציית ברוט-פורס (Brute-force)
+                for (let n1 = 0; (n1 * price1Ils) < totalMoney; n1++) {
+                    const cost1 = n1 * price1Ils;
+                    let commission1 = 0;
+                    if (n1 > 0) {
+                        commission1 = Math.max(cost1 * commissionDecimal, minCommission);
+                    }
+                    const totalCost1 = cost1 + commission1;
+                    
+                    if (totalCost1 > totalMoney) {
+                        break;
+                    }
+
+                    for (let n2 = 0; (totalCost1 + (n2 * price2Ils)) < totalMoney; n2++) {
+                        const cost2 = n2 * price2Ils;
+                        let commission2 = 0;
+                        if (n2 > 0) {
+                            commission2 = Math.max(cost2 * commissionDecimal, minCommission);
+                        }
+                        const totalCost2 = cost2 + commission2;
+                        
+                        const totalPurchaseCost = totalCost1 + totalCost2;
+                        
+                        if (totalPurchaseCost > totalMoney) {
+                            continue;
+                        }
+
+                        const currentLeftover = totalMoney - totalPurchaseCost;
+                        
+                        // בדיקה האם הצירוף הנוכחי טוב יותר מהתוצאה הקודמת
+                        if (currentLeftover < minLeftover) {
+                            minLeftover = currentLeftover;
+                            bestN1 = n1;
+                            bestN2 = n2;
+                            maxTotalCost = totalPurchaseCost;
+                        } else if (currentLeftover === minLeftover && totalPurchaseCost > maxTotalCost) {
+                             // אם העודף זהה, נבחר את האפשרות עם עלות הקנייה הגבוהה יותר
+                            bestN1 = n1;
+                            bestN2 = n2;
+                            maxTotalCost = totalPurchaseCost;
+                        }
+                    }
+                }
+                
+                // הצגת התוצאות למשתמש
+                if (bestN1 === 0 && bestN2 === 0) {
+                    showMessage('לא נמצאה אפשרות קנייה התואמת את הנתונים.', 'info');
+                } else {
+                    const cost1 = bestN1 * price1Ils;
+                    const commission1 = bestN1 > 0 ? Math.max(cost1 * commissionDecimal, minCommission) : 0;
+                    
+                    const cost2 = bestN2 * price2Ils;
+                    const commission2 = bestN2 > 0 ? Math.max(cost2 * commissionDecimal, minCommission) : 0;
+                    
+                    const totalCommission = commission1 + commission2;
+                    const finalLeftover = totalMoney - (cost1 + cost2 + totalCommission);
+                    
+                    resultOutput.innerHTML = `
+                        <div class="space-y-2">
+                            <p class="text-lg font-semibold">יש לרכוש:</p>
+                            <p><strong>${bestN1}</strong> יחידות מנייר ערך <span class="font-bold text-sky-600">1159250</span> (${formatNumber(cost1)} ש"ח)</p>
+                            <p><strong>${bestN2}</strong> יחידות מנייר ערך <span class="font-bold text-sky-600">1159243</span> (${formatNumber(cost2)} ש"ח)</p>
+                            <hr class="my-2 border-gray-300">
+                            <p>סה"כ עמלות: <strong>${formatNumber(totalCommission)} ש"ח</strong></p>
+                            <p>עלות קנייה כוללת: <strong>${formatNumber(cost1 + cost2 + totalCommission)} ש"ח</strong></p>
+                            <p>העודף שיישאר: <strong>${formatNumber(finalLeftover)} ש"ח</strong></p>
+                        </div>
+                    `;
+                    resultsDiv.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

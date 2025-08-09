@@ -39,7 +39,7 @@
     </style>
 </head>
 <body class="p-4 md:p-8 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl w-full max-w-lg space-y-6">
+    <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl w-full max-w-lg space-y-6 block">
         <h1 class="text-3xl md:text-4xl font-bold text-gray-800 text-center">מחשבון אופטימיזציית קנייה</h1>
         
         <div id="message-box" class="hidden p-4 rounded-lg bg-red-100 text-red-700 font-medium" role="alert"></div>
@@ -240,8 +240,8 @@
                     resultOutput.innerHTML = `
                         <div class="space-y-2">
                             <p class="text-lg font-semibold">יש לרכוש:</p>
-                            <p><strong>${bestN1}</strong> יחידות מנייר ערך <span class="font-bold text-sky-600">1159250</span> (${formatNumber(cost1)} ש"ח)</p>
-                            <p><strong>${bestN2}</strong> יחידות מנייר ערך <span class="font-bold text-sky-600">1159243</span> (${formatNumber(cost2)} ש"ח)</p>
+                            <p><strong>${bestN1}</strong> יחידות מנייר <span class="font-bold text-sky-600">1159250</span> (${formatNumber(cost1)} ש"ח)</p>
+                            <p><strong>${bestN2}</strong> יחידות מנייר <span class="font-bold text-sky-600">1159243</span> (${formatNumber(cost2)} ש"ח)</p>
                             <hr class="my-2 border-gray-300">
                             <p>סה"כ עמלות: <strong>${formatNumber(totalCommission)} ש"ח</strong></p>
                             <p>עלות קנייה כוללת: <strong>${formatNumber(cost1 + cost2 + totalCommission)} ש"ח</strong></p>

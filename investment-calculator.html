@@ -108,6 +108,9 @@
             const resultOutput = document.getElementById('resultOutput');
             const messageBox = document.getElementById('message-box');
 
+            // פונקציית עזר לעיגול מספר לשני מקומות עשרוניים
+            const roundToTwoDecimals = (num) => Math.round(num * 100) / 100;
+
             // פונקציית עזר לעיצוב מספרים עם פסיקים
             const formatNumber = (num) => {
                 if (isNaN(num)) return '';
@@ -158,7 +161,6 @@
                 const totalMoney = parseFloat(cleanNumber(totalMoneyInput.value));
                 const price1Agorot = parseFloat(price1Input.value);
                 const price2Agorot = parseFloat(price2Input.value);
-                // קבלת ערכי העמלה מהשדות החדשים
                 const commissionRate = parseFloat(commissionRateInput.value);
                 const minCommission = parseFloat(minCommissionInput.value);
                 
@@ -205,23 +207,26 @@
                         
                         const totalPurchaseCost = totalCost1 + totalCost2;
                         
-                        if (totalPurchaseCost > totalMoney) {
+                        // עיגול העלות הכוללת לפני ההשוואה
+                        const roundedTotalCost = roundToTwoDecimals(totalPurchaseCost);
+
+                        if (roundedTotalCost > totalMoney) {
                             continue;
                         }
 
-                        const currentLeftover = totalMoney - totalPurchaseCost;
+                        const currentLeftover = totalMoney - roundedTotalCost;
                         
                         // בדיקה האם הצירוף הנוכחי טוב יותר מהתוצאה הקודמת
                         if (currentLeftover < minLeftover) {
                             minLeftover = currentLeftover;
                             bestN1 = n1;
                             bestN2 = n2;
-                            maxTotalCost = totalPurchaseCost;
-                        } else if (currentLeftover === minLeftover && totalPurchaseCost > maxTotalCost) {
+                            maxTotalCost = roundedTotalCost;
+                        } else if (currentLeftover === minLeftover && roundedTotalCost > maxTotalCost) {
                              // אם העודף זהה, נבחר את האפשרות עם עלות הקנייה הגבוהה יותר
                             bestN1 = n1;
                             bestN2 = n2;
-                            maxTotalCost = totalPurchaseCost;
+                            maxTotalCost = roundedTotalCost;
                         }
                     }
                 }

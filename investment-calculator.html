@@ -113,6 +113,10 @@
 
             // פונקציית עזר לעיצוב מספרים עם פסיקים
             const formatNumber = (num) => {
+                // בדיקה אם המספר קרוב לאפס. אם כן, נחזיר "0.00"
+                if (Math.abs(num) < 0.001) {
+                    return '0.00';
+                }
                 if (isNaN(num)) return '';
                 return num.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             };

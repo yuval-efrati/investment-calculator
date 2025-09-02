@@ -114,7 +114,7 @@
             // פונקציית עזר לעיצוב מספרים עם פסיקים
             const formatNumber = (num) => {
                 // בדיקה אם המספר קרוב לאפס. אם כן, נחזיר "0.00"
-                if (num < 0.005) {
+                if (Math.abs(num) < 0.000001) {
                     return '0.00';
                 }
                 if (isNaN(num)) return '';
@@ -123,7 +123,7 @@
 
             // פונקציית עזר להסרת פסיקים מפורמט המספר
             const cleanNumber = (text) => {
-                return text.replace(/[^\d.]/g, ''); // מסיר כל תו שאינו ספרה או נקודה
+                return text.replace(/[^\d.]/g, '');
             };
 
             // פונקציית הצגת הודעות למשתמש
@@ -245,8 +245,8 @@
                     const cost2 = bestN2 * price2Ils;
                     const commission2 = bestN2 > 0 ? Math.max(cost2 * commissionDecimal, minCommission) : 0;
                     
-                    const totalCommission = commission1 + commission2;
-                    const finalLeftover = totalMoney - (cost1 + cost2 + totalCommission);
+                    const totalCommission = roundToTwoDecimals(commission1 + commission2);
+                    const finalLeftover = totalMoney - roundToTwoDecimals(cost1 + cost2 + totalCommission);
                     
                     resultOutput.innerHTML = `
                         <div class="space-y-2">
@@ -255,7 +255,7 @@
                             <p><strong>${bestN2}</strong> יח' מנייר <span class="font-bold text-sky-600">1159243</span> (${formatNumber(cost2)} ש"ח)</p>
                             <hr class="my-2 border-gray-300">
                             <p>סה"כ עמלות: <strong>${formatNumber(totalCommission)} ש"ח</strong></p>
-                            <p>עלות קנייה כוללת: <strong>${formatNumber(cost1 + cost2 + totalCommission)} ש"ח</strong></p>
+                            <p>עלות קנייה כוללת: <strong>${formatNumber(roundToTwoDecimals(cost1 + cost2 + totalCommission))} ש"ח</strong></p>
                             <p>העודף שיישאר: <strong>${formatNumber(finalLeftover)} ש"ח</strong></p>
                         </div>
                     `;

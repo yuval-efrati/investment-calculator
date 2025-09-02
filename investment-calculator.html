@@ -188,28 +188,28 @@
 
                 // לולאה אופטימיזציית ברוט-פורס (Brute-force)
                 for (let n1 = 0; (n1 * price1Ils) < totalMoney; n1++) {
-                    const potentialCost1 = n1 * price1Ils;
+                    const potentialCost1 = roundToTwoDecimals(n1 * price1Ils);
                     if (n1 > 0 && potentialCost1 * commissionDecimal < minCommission) {
                         continue;
                     }
                     
-                    const commission1 = n1 > 0 ? Math.max(potentialCost1 * commissionDecimal, minCommission) : 0;
-                    const totalCost1 = potentialCost1 + commission1;
+                    const commission1 = roundToTwoDecimals(n1 > 0 ? Math.max(potentialCost1 * commissionDecimal, minCommission) : 0);
+                    const totalCost1 = roundToTwoDecimals(potentialCost1 + commission1);
                     
                     if (totalCost1 > totalMoney) {
                         break;
                     }
 
                     for (let n2 = 0; (totalCost1 + (n2 * price2Ils)) < totalMoney; n2++) {
-                        const potentialCost2 = n2 * price2Ils;
+                        const potentialCost2 = roundToTwoDecimals(n2 * price2Ils);
                         if (n2 > 0 && potentialCost2 * commissionDecimal < minCommission) {
                             continue;
                         }
 
-                        const commission2 = n2 > 0 ? Math.max(potentialCost2 * commissionDecimal, minCommission) : 0;
-                        const totalCost2 = potentialCost2 + commission2;
+                        const commission2 = roundToTwoDecimals(n2 > 0 ? Math.max(potentialCost2 * commissionDecimal, minCommission) : 0);
+                        const totalCost2 = roundToTwoDecimals(potentialCost2 + commission2);
                         
-                        const totalPurchaseCost = totalCost1 + totalCost2;
+                        const totalPurchaseCost = roundToTwoDecimals(totalCost1 + totalCost2);
                         
                         // עיגול העלות הכוללת לפני ההשוואה
                         const roundedTotalCost = roundToTwoDecimals(totalPurchaseCost);
@@ -218,7 +218,7 @@
                             continue;
                         }
 
-                        const currentLeftover = totalMoney - roundedTotalCost;
+                        const currentLeftover = roundToTwoDecimals(totalMoney - roundedTotalCost);
                         
                         // בדיקה האם הצירוף הנוכחי טוב יותר מהתוצאה הקודמת
                         if (currentLeftover < minLeftover) {
@@ -239,14 +239,14 @@
                 if (bestN1 === 0 && bestN2 === 0) {
                     showMessage('לא נמצאה אפשרות קנייה התואמת את הנתונים.', 'info');
                 } else {
-                    const cost1 = bestN1 * price1Ils;
-                    const commission1 = bestN1 > 0 ? Math.max(cost1 * commissionDecimal, minCommission) : 0;
+                    const cost1 = roundToTwoDecimals(bestN1 * price1Ils);
+                    const commission1 = roundToTwoDecimals(bestN1 > 0 ? Math.max(cost1 * commissionDecimal, minCommission) : 0);
                     
-                    const cost2 = bestN2 * price2Ils;
-                    const commission2 = bestN2 > 0 ? Math.max(cost2 * commissionDecimal, minCommission) : 0;
+                    const cost2 = roundToTwoDecimals(bestN2 * price2Ils);
+                    const commission2 = roundToTwoDecimals(bestN2 > 0 ? Math.max(cost2 * commissionDecimal, minCommission) : 0);
                     
                     const totalCommission = roundToTwoDecimals(commission1 + commission2);
-                    const finalLeftover = totalMoney - roundToTwoDecimals(cost1 + cost2 + totalCommission);
+                    const finalLeftover = roundToTwoDecimals(totalMoney - roundToTwoDecimals(cost1 + cost2 + totalCommission));
                     
                     resultOutput.innerHTML = `
                         <div class="space-y-2">
